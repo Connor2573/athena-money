@@ -1,5 +1,4 @@
 import pandas as pd
-from getRedditData import getRecentHots
 import yfinance as yf
 from datetime import datetime
 import os
