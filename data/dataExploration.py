@@ -1,22 +1,21 @@
-import getRedditData as rd
-import time
-import datetime
 import pandas as pd
-from time import sleep
+import os
+import matplotlib.pyplot as plt
 
-df = pd.read_csv('./data/stock_market_data/forbes2000/csv/TSLA.csv')
-sub = 'investing'
+path = './data/myData/'
 
 def preprocess(df):
     df['Date'] = pd.to_datetime(df['Date'], dayfirst = True, format = '%d-%m-%Y')
 
-preprocess(df)
+dfs = []
+for filename in os.listdir(path):
+    f = os.path.join(path, filename)
+    if os.path.isfile(f) and f.find(".csv") != -1:
+        dfs.append(pd.read_csv(f))
 
-for date in df['Date']:
-    endDate = date + datetime.timedelta(days=1)
-    data = rd.get_posts_for_time_period(sub, date, endDate)
-    if not data['data']:
-        print('no data')
-        sleep
-    else:
+#this kind of works but ehh
+ax = dfs[0].plot(x='timestamp', y='priceNow')
+for df in dfs:
+    ax = df.plot(x='timestamp', y='priceNow', ax=ax)
+plt.show()
         

@@ -6,7 +6,8 @@ import os
 
 directoryToSave = './data/myData/'
 
-myWatchList = ['TSLA', 'EA', 'INTC', 'MSFT', 'SONY']
+myWatchList = set(['TSLA', 'EA', 'INTC', 'MSFT', 'SONY', 'NVDA', 'AAPL', 'ENPH', 'GOOGL', 'NOC', 'IBM', 'META', 'CVNA', 
+               'AMD', 'AMC', 'AMZN', 'SOFI', 'JPM'])
 
 def buildPandaHourly(codes):
     now = datetime.now()
@@ -57,4 +58,5 @@ def buildPandaHourly(codes):
             dataframe = pd.concat([previousFrame, dataframe])
         dataframe.to_csv(directoryToSave + code + '.csv', index = False)
 
-buildPandaHourly(myWatchList)
+for x in range(0, 3):
+    buildPandaHourly(myWatchList)
