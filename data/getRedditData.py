@@ -25,9 +25,9 @@ def get_posts_for_time_period(sub, beginning, end=int(datetime.datetime.now().ti
         print('bad response')
 
 
-def getRecentHots():
+def getRecentHots(sub):
 
     reddit = praw.Reddit(client_id='l0vYqYMpPR7fwqrEh2ET1w', client_secret='PqjHAMaSTT4UizII24zyXeHr5eLR1Q', user_agent='stockBot')
 
-    hot_posts = reddit.subreddit('worldnews').hot(limit=50)
+    hot_posts = reddit.subreddit(sub).hot(limit=50)
     return hot_posts
