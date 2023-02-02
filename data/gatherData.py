@@ -57,5 +57,4 @@ def buildPandaHourly(codes):
             dataframe = pd.concat([previousFrame, dataframe])
         dataframe.to_csv(directoryToSave + code + '.csv', index = False)
 
-for x in range(0, 3):
-    buildPandaHourly(myWatchList)
+buildPandaHourly(myWatchList)
