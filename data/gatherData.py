@@ -3,7 +3,7 @@ import yfinance as yf
 from datetime import datetime
 import os
 
-directoryToSave = './data/myData/'
+directoryToSave = '/home/xarga/repos/athena-money/data/myData/'
 
 myWatchList = set(['TSLA', 'EA', 'INTC', 'MSFT', 'SONY', 'NVDA', 'AAPL', 'ENPH', 'GOOGL', 'NOC', 'IBM', 'META', 'CVNA', 
                'AMD', 'AMC', 'AMZN', 'SOFI', 'JPM'])
