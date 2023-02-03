@@ -14,8 +14,7 @@ for filename in os.listdir(path):
         dfs.append(pd.read_csv(f))
 
 #this kind of works but ehh
-ax = dfs[0].plot(x='timestamp', y='priceNow')
 for df in dfs:
-    ax = df.plot(x='timestamp', y='priceNow', ax=ax)
+    df.plot(x='timestamp', y='priceNow')
 plt.show()
         

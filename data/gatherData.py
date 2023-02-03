@@ -3,7 +3,8 @@ import yfinance as yf
 from datetime import datetime
 import os
 
-directoryToSave = '/home/xarga/repos/athena-money/data/myData/'
+#directoryToSave = '/home/xarga/repos/athena-money/data/myData/'
+directoryToSave = './data/myData/'
 
 myWatchList = set(['TSLA', 'EA', 'INTC', 'MSFT', 'SONY', 'NVDA', 'AAPL', 'ENPH', 'GOOGL', 'NOC', 'IBM', 'META', 'CVNA', 
                'AMD', 'AMC', 'AMZN', 'SOFI', 'JPM'])
@@ -17,7 +18,6 @@ def buildPandaHourly(codes):
             previousFrame = pd.read_csv(directoryToSave + code + '.csv')
         stock = yf.Ticker(code)
         dataframe = pd.DataFrame()
-        stock.fast_info
         eForecast = stock.earnings_forecasts
         ## analyst price is very useful indexes: 0: targetLow, 1: current, 2: targetMean, 3: targetHigh, 4: analysts
         analystPrice = stock.analyst_price_target[0]
@@ -28,7 +28,16 @@ def buildPandaHourly(codes):
             newsList.append(news['title'])
         dataframe['timestamp'] = [pd.Timestamp(now)]
 
-        dataframe['priceNow'] = [analystPrice[1]]
+        info = stock.fast_info
+        dataframe['price'] = info['last_price']
+        dataframe['open'] = info['open']
+        dataframe['lastClose'] = info['previous_close']
+        dataframe['dayHigh'] = info['day_high']
+        dataframe['dayLow'] = info['day_low']
+        dataframe['yearLow'] = info['year_low']
+        dataframe['yearHigh'] = info['year_high']
+        dataframe['50avg'] = info['fifty_day_average']
+        dataframe['200avg'] = info['two_hundred_day_average']
         
         dataframe['targetLow'] = [analystPrice[0]]
         dataframe['targetMean'] = [analystPrice[2]]
