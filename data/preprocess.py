@@ -1,12 +1,12 @@
 import pandas as pd
 import os
-import matplotlib.pyplot as plt
-from robertaSentimentModel import getSentiment
+
+pd.set_option('display.max_columns', None)
 
 path = './data/myData/'
 
-def processTime(df):
-    df['timestamp'] = pd.to_datetime(df['timestamp'], yearfirst=True, infer_datetime_format=True)
+def loadSpecificCsv(csv):
+    return [pd.read_csv(path + csv)], [csv]
 
 def loadAllData():
     dfs = []
@@ -18,10 +18,13 @@ def loadAllData():
             names.append(filename)
     return dfs, names
 
-def loadSpecificCsv(csv):
-    return [pd.read_csv(path + csv)], [csv]
+def processTime(df):
+    df['timestamp'] = pd.to_datetime(df['timestamp'], yearfirst=True, infer_datetime_format=True)
+    df['lastEarningDate'] = pd.to_datetime(df['lastEarningDate'], yearfirst=True, infer_datetime_format=True)
+    df['nextEarningDate'] = pd.to_datetime(df['nextEarningDate'], yearfirst=True, infer_datetime_format=True)
 
 def processText(df):
+    from robertaSentimentModel import getSentiment
     posAvg = []
     negAvg = []
     neuAvg = []
@@ -43,22 +46,14 @@ def processText(df):
         neuAvg.append(avgs[neuInd] / count)
     return posAvg, negAvg, neuAvg
 
+def preprocess(df):
+    processTime(df)
+    df['positiveSentiment'], df['negativeSentiment'], df['neutralSentiment'] = processText(df)
+
 
 #dfs, names = loadAllData()
 dfs, names = loadSpecificCsv('TSLA.csv')
-
 for df, name in zip(dfs, names):
-    print('Working on: ' + name)
-    gf = pd.DataFrame()
     processTime(df)
-    gf['time'] = df['timestamp']
-    gf['price'] = df['price']
-    pos, neg, neu = processText(df)
-    gf['positive'] = pos
-    gf['negative'] = neg
-    gf['neutral'] = neu
-    print(gf.describe())
-    print(gf.dtypes)
-    gf.plot(x='time', sharex=True, title=name, subplots=True)
-plt.show()
-        
+    print(df.head())
+    print(df.dtypes)
