@@ -1,9 +1,11 @@
 import pandas as pd
 import os
+from robertaSentimentModel import getSentiment
 
 pd.set_option('display.max_columns', None)
 
 path = './data/myData/'
+pathToProcessed = './data/processedData/'
 
 def loadSpecificCsv(csv):
     return [pd.read_csv(path + csv)], [csv]
@@ -19,12 +21,12 @@ def loadAllData():
     return dfs, names
 
 def processTime(df):
-    df['timestamp'] = pd.to_datetime(df['timestamp'], yearfirst=True, infer_datetime_format=True)
-    df['lastEarningDate'] = pd.to_datetime(df['lastEarningDate'], yearfirst=True, infer_datetime_format=True)
-    df['nextEarningDate'] = pd.to_datetime(df['nextEarningDate'], yearfirst=True, infer_datetime_format=True)
+    timeCols = ['timestamp']#, 'lastEarningDate', 'nextEarningDate'] we are not using these right now
+    for tCol in timeCols:
+        df[tCol] = pd.to_datetime(df[tCol], yearfirst=True, infer_datetime_format=True)
+        
 
 def processText(df):
-    from robertaSentimentModel import getSentiment
     posAvg = []
     negAvg = []
     neuAvg = []
@@ -46,14 +48,27 @@ def processText(df):
         neuAvg.append(avgs[neuInd] / count)
     return posAvg, negAvg, neuAvg
 
-def preprocess(df):
+def preprocess(df, name):
     processTime(df)
-    df['positiveSentiment'], df['negativeSentiment'], df['neutralSentiment'] = processText(df)
+    pos, neg, neu = processText(df)
+    df['positiveScore'] = pos
+    df['negativeScore'] = neg
+    df['neutralScore'] = neu
+
+    #gonna drop some data we are not ready to use
+    columnsToRemove = ['lastEarningDate', 'lastEarnExp', 'lastEarnActual', 'lastEarnSuprise%', 'nextEarningDate', 'nextEarnExepected', 'text']
+    df.drop(columns=columnsToRemove, inplace=True)
+
+    df.to_csv(pathToProcessed + name, index=False)
 
 
-#dfs, names = loadAllData()
-dfs, names = loadSpecificCsv('TSLA.csv')
+
+
+dfs, names = loadAllData()
+#dfs, names = loadSpecificCsv('TSLA.csv')
 for df, name in zip(dfs, names):
-    processTime(df)
-    print(df.head())
-    print(df.dtypes)
+    print('working on: ' + name)
+    preprocess(df, name)
+    print('wrote: ' + name)
+
+print('done')

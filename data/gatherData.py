@@ -17,6 +17,12 @@ def buildPandaHourly(codes):
         if found:
             previousFrame = pd.read_csv(directoryToSave + code + '.csv')
         stock = yf.Ticker(code)
+        try:
+            stock.info
+        except:
+            print("Not valid stock: {}", code)
+            continue
+
         dataframe = pd.DataFrame()
         eForecast = stock.earnings_forecasts
         ## analyst price is very useful indexes: 0: targetLow, 1: current, 2: targetMean, 3: targetHigh, 4: analysts

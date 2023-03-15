@@ -1,0 +1,5 @@
+import torch
+
+
+apiKey = CKQZH32DW8U5ZUUX5BNU
+secretAPI= Y4EDyBj8CUUiJG0W5sTSOBr2qACC8CHa01bG8CTz

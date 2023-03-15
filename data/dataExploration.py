@@ -45,7 +45,7 @@ def processText(df):
 
 
 #dfs, names = loadAllData()
-dfs, names = loadSpecificCsv('TSLA.csv')
+dfs, names = loadSpecificCsv('ENPH.csv')
 
 for df, name in zip(dfs, names):
     print('Working on: ' + name)
