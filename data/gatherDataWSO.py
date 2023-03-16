@@ -26,7 +26,6 @@ for symbol in myWatchList:
 symbols = symbols[:-1]
 
 url = urlMain+urlfields+format+symbols
-print(url)
 r = requests.post(url)
 json = r.json()
 
