@@ -14,7 +14,7 @@ def preprocess(text):
         t = 'http' if t.startswith('http') else t
         new_text.append(t)
     return " ".join(new_text)
-MODEL = f"cardiffnlp/twitter-roberta-base-sentiment-latest"
+MODEL = f"ProsusAI/finbert"
 tokenizer = AutoTokenizer.from_pretrained(MODEL)
 config = AutoConfig.from_pretrained(MODEL)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL).to(device)

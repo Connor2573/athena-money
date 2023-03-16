@@ -1,11 +1,10 @@
 import pandas as pd
 import os
-from robertaSentimentModel import getSentiment
 
 pd.set_option('display.max_columns', None)
 
 path = './data/myData/'
-pathToProcessed = './data/processedData/'
+pathToProcessed = './data/processedData2/'
 
 def loadSpecificCsv(csv):
     return [pd.read_csv(path + csv)], [csv]
@@ -25,8 +24,26 @@ def processTime(df):
     for tCol in timeCols:
         df[tCol] = pd.to_datetime(df[tCol], yearfirst=True, infer_datetime_format=True)
         
+def processTextBert(df):
+    from bertSentimentModel import getSentiment
+    pos = []
+    neg = []
+    for titles in df['text']:
+        avgs = [0, 0]
+        count = 0
+        for title in titles:
+            p, n = getSentiment(title)
+            avgs[0] = avgs[0] + p
+            avgs[1] = avgs[1] + n
+            count += 1
+        pos.append(avgs[0] / count)
+        neg.append(avgs[1] / count)
+    df['positiveScore'] = pos
+    df['negativeScore'] = neg
+
 
 def processText(df):
+    from sentimentModel import getSentiment
     posAvg = []
     negAvg = []
     neuAvg = []
@@ -46,14 +63,14 @@ def processText(df):
         posAvg.append(avgs[pInd] / count)
         negAvg.append(avgs[negInd] / count)
         neuAvg.append(avgs[neuInd] / count)
-    return posAvg, negAvg, neuAvg
+    
+    df['positiveScore'] = posAvg
+    df['negativeScore'] = negAvg
+    df['neutralScore'] = neuAvg
 
 def preprocess(df, name):
     processTime(df)
-    pos, neg, neu = processText(df)
-    df['positiveScore'] = pos
-    df['negativeScore'] = neg
-    df['neutralScore'] = neu
+    processText(df)
 
     #gonna drop some data we are not ready to use
     columnsToRemove = ['lastEarningDate', 'lastEarnExp', 'lastEarnActual', 'lastEarnSuprise%', 'nextEarningDate', 'nextEarnExepected', 'text']

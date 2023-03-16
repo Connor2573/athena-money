@@ -7,6 +7,7 @@ from sklearn.preprocessing import LabelEncoder
 
 def preprocess(df):
     preprocesstimestamp(df)
+    df = df.drop(columns=['lastClose'])
 
 def loadAllMyCsvsIntoSingleDataframe(path):
     dfs = []
@@ -25,6 +26,11 @@ def loadAllMyCsvsIntoSingleDataframe(path):
         df = pd.concat([df, ndf])
     df['name'] = encoder.fit_transform(df['name'])
     return df
+
+def loadSingleCsv(filename):
+    path = './data/processedData/'
+    f = os.path.join(path, filename)
+    return pd.read_csv(f)
 
 def loadAllMyCsvsIntoDataframeList(path):
     dfs = []
@@ -50,7 +56,9 @@ class myData(torch.utils.data.Dataset):
         preprocess(df)
         self.input = df.drop(columns='price').values
         self.output = df['price'].values
-        self.dataframe = df                  
+        self.dataframe = df
+        self.numFeatures = len(self.input)
+        self.numTargets = len(self.output)
 
     def __len__(self):
         return len(self.dataframe)

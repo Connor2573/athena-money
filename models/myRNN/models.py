@@ -1,40 +1,7 @@
 import torch
+from torch.autograd import Variable 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-class LSTM1(torch.nn.Module):
-    def __init__(self, features, hidden_layers=64):
-        super(LSTM1, self).__init__()
-        self.hidden_layers = hidden_layers
-        # lstm1, lstm2, linear are all layers in the network
-        self.lstm1 = torch.nn.LSTMCell(features, self.hidden_layers)
-        self.lstm2 = torch.nn.LSTMCell(self.hidden_layers, self.hidden_layers)
-        self.linear = torch.nn.Linear(self.hidden_layers, 1)
-        
-    def forward(self, input_t, y, future_preds=0):
-        outputs, n_samples = [], y.size(0)
-        h_t = torch.zeros(n_samples, self.hidden_layers, dtype=torch.float32).to(device)
-        c_t = torch.zeros(n_samples, self.hidden_layers, dtype=torch.float32).to(device)
-        h_t2 = torch.zeros(n_samples, self.hidden_layers, dtype=torch.float32).to(device)
-        c_t2 = torch.zeros(n_samples, self.hidden_layers, dtype=torch.float32).to(device)
-        
-        for time_step in y.split(1, dim=1):
-            # N, 1
-            h_t, c_t = self.lstm1(input_t, (h_t, c_t)) # initial hidden and cell states
-            h_t2, c_t2 = self.lstm2(h_t, (h_t2, c_t2)) # new hidden and cell states
-            output = self.linear(h_t2) # output from the last FC layer
-            outputs.append(output)
-            
-        for i in range(future_preds):
-            # this only generates future predictions if we pass in future_preds>0
-            # mirrors the code above, using last output/prediction as input
-            h_t, c_t = self.lstm1(output, (h_t, c_t))
-            h_t2, c_t2 = self.lstm2(h_t, (h_t2, c_t2))
-            output = self.linear(h_t2)
-            outputs.append(output)
-        # transform list to tensor    
-        outputs = torch.cat(outputs, dim=1).to(device)
-        return outputs
 
 class MV_LSTM(torch.nn.Module):
     def __init__(self,n_features,seq_length):
@@ -46,8 +13,7 @@ class MV_LSTM(torch.nn.Module):
     
         self.l_lstm = torch.nn.LSTM(input_size = n_features, 
                                  hidden_size = self.n_hidden,
-                                 num_layers = self.n_layers, 
-                                 batch_first = True)
+                                 num_layers = self.n_layers)
         # according to pytorch docs LSTM output is 
         # (batch_size,seq_len, num_directions * hidden_size)
         # when considering batch_first = True
@@ -70,3 +36,33 @@ class MV_LSTM(torch.nn.Module):
         # .contiguous() -> solves tensor compatibility error
         x = lstm_out.contiguous().view(batch_size,-1)
         return self.l_linear(x)
+
+
+class athenaLTSM(torch.nn.Module):
+    def __init__(self, num_targets, input_size, hidden_size, num_layers, seq_length):
+        super(athenaLTSM, self).__init__()
+        self.num_classes = num_targets #number of classes
+        self.num_layers = num_layers #number of layers
+        self.input_size = input_size #input size
+        self.hidden_size = hidden_size #hidden state
+        self.seq_length = seq_length #sequence length
+        print('Sequence Length is ', self.seq_length)
+
+        self.lstm = torch.nn.LSTM(input_size=input_size, hidden_size=hidden_size,
+                            num_layers=num_layers, batch_first=True) #lstm
+        self.fc_1 =  torch.nn.Linear(hidden_size, 128) #fully connected 1
+        self.fc = torch.nn.Linear(128, num_targets) #fully connected last layer
+
+        self.relu = torch.nn.ReLU()
+
+    def forward(self,x):
+        h_0 = Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)) #hidden state
+        c_0 = Variable(torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)) #internal state
+        # Propagate input through LSTM
+        output, (hn, cn) = self.lstm(x, (h_0, c_0)) #lstm with input, hidden, and internal state
+        hn = hn.view(-1, self.hidden_size) #reshaping the data for Dense layer next
+        out = self.relu(hn)
+        out = self.fc_1(out) #first Dense
+        out = self.relu(out) #relu
+        out = self.fc(out) #Final Output
+        return out

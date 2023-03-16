@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 from robertaSentimentModel import getSentiment
 
-path = './data/myData/'
+path = './data/processedData/'
 
 def processTime(df):
     df['timestamp'] = pd.to_datetime(df['timestamp'], yearfirst=True, infer_datetime_format=True)
@@ -45,20 +45,10 @@ def processText(df):
 
 
 #dfs, names = loadAllData()
-dfs, names = loadSpecificCsv('ENPH.csv')
+dfs, names = loadSpecificCsv('TSLA.csv')
 
 for df, name in zip(dfs, names):
     print('Working on: ' + name)
-    gf = pd.DataFrame()
-    processTime(df)
-    gf['time'] = df['timestamp']
-    gf['price'] = df['price']
-    pos, neg, neu = processText(df)
-    gf['positive'] = pos
-    gf['negative'] = neg
-    gf['neutral'] = neu
-    print(gf.describe())
-    print(gf.dtypes)
-    gf.plot(x='time', sharex=True, title=name, subplots=True)
+    df.plot(x='timestamp', sharex=True, title=name, subplots=True)
 plt.show()
         
