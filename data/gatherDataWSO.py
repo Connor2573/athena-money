@@ -41,4 +41,4 @@ new_df = pd.DataFrame(json['response'])
 
 merged = pd.merge(df, new_df, on = 'symbol')
 
-merged.to_csv(directoryToSave + now.strftime('%Y%m%d%H') + '.csv', index = False)
+merged.to_csv(directoryToSave + now.strftime('%Y%m%d%H%M') + '.csv', index = False)
