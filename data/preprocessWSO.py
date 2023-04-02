@@ -28,7 +28,6 @@ def singleFileData(watchList):
     processedDir = os.path.join(basedir, 'processedData')
     df = loadAllData(dataDir)
     df.reset_index(drop=True, inplace=True)
-    print(df.dtypes)
     dfs = []
     names = []
     for code in watchList:
@@ -48,7 +47,7 @@ def singleFileData(watchList):
         processedPath = os.path.join(processedDir, name + '.csv')
         df.to_csv(processedPath)
 
-    #deleteData(dataDir)
+    deleteData(dataDir)
 
 
 singleFileData(myWatchList)
