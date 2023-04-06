@@ -5,14 +5,21 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 
 def loaderTickerData(ticker):
-    weeksStored = 2
+    startingWeek = 2
+    weeksStored = 3
     dfs = []
-    for i in range(1, weeksStored+1):
+    for i in range(startingWeek, weeksStored+1):
         dfs.append(loadSingleCsv(ticker+str(i)+'.csv'))
     main_df = dfs[0]
-    for i in range(1, weeksStored):
+    for i in range(0, weeksStored-startingWeek):
         main_df = pd.concat([main_df, dfs[i]])
-    return main_df
+    return preprocess_df(main_df)
+
+def preprocess_df(df):
+    cols = df.columns.tolist()
+    new_cols = cols[2:3] + cols[3:4] + cols[4:]
+    df = df[new_cols]
+    return df
 
 def preprocess(df):
     preprocesstimestamp(df)

@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-week = '2'
+week = '3'
 myWatchList = set(['TSLA', 'EA', 'INTC', 'MSFT', 'SONY', 'NVDA', 'AAPL', 'ENPH', 'GOOGL', 'NOC', 'IBM', 'META', 'CVNA', 
                'AMD', 'AMC', 'AMZN', 'SOFI', 'JPM'])
 

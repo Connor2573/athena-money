@@ -15,7 +15,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 num_epochs = 1000 #1000 epochs
 learning_rate = 0.001 #0.001 lr
 
-input_size = 7 #number of features
+input_size = 6 #number of features
 hidden_size = 128 #number of features in hidden state
 num_layers = 1 #number of stacked lstm layers
 seq_length = 10
@@ -23,10 +23,12 @@ num_classes = 1 #number of output classes
 split = 400 
 
 #df = loadSingleCsv('AAPL2.csv')
-df = loaderTickerData('CVNA')
+df = loaderTickerData('GOOGL')
 
-X = df.iloc[:, 3:]
-Y = df.iloc[:, 2:3]
+dataIndex = 1
+X = df.iloc[:, 2:]
+Y = df.iloc[:, dataIndex:dataIndex+1]
+target_xlabel = df.columns[dataIndex]
 
 X_ss = ss.fit_transform(X)
 y_mm = mm.fit_transform(Y) 
@@ -74,8 +76,8 @@ for epoch in range(num_epochs):
 
 print("finished training")
 
-df_X_ss = ss.transform(df.iloc[:, 3:]) #old transformers
-df_y_mm = mm.transform(df.iloc[:, 2:3]) #old transformers
+df_X_ss = ss.transform(df.iloc[:, 2:]) #old transformers
+df_y_mm = mm.transform(df.iloc[:, dataIndex:dataIndex+1]) #old transformers
 
 df_X_ss = Variable(torch.Tensor(df_X_ss).to(device)) #converting to Tensors
 df_y_mm = Variable(torch.Tensor(df_y_mm).to(device))
@@ -91,9 +93,11 @@ dataY_plot = mm.inverse_transform(dataY_plot)
 plt.figure(figsize=(10,6)) #plotting
 plt.axvline(x=split, c='r', linestyle='--') #size of the training set
 
-plt.plot(dataY_plot, label='Actuall Data') #actual plot
+plt.plot(dataY_plot, label='Actual Data') #actual plot
 plt.plot(data_predict, label='Predicted Data') #predicted plot
 plt.title('Time-Series Prediction')
+plt.xlabel('Time')
+plt.ylabel(target_xlabel)
 
 torch.save(lstm1, './models/savedModels/mk1.pth')
 
