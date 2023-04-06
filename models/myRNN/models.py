@@ -8,8 +8,8 @@ class MV_LSTM(torch.nn.Module):
         super(MV_LSTM, self).__init__()
         self.n_features = n_features
         self.seq_len = seq_length
-        self.n_hidden = 64 # number of hidden states
-        self.n_layers = 2 # number of LSTM layers (stacked)
+        self.n_hidden = 128 # number of hidden states
+        self.n_layers = 5 # number of LSTM layers (stacked)
     
         self.l_lstm = torch.nn.LSTM(input_size = n_features, 
                                  hidden_size = self.n_hidden,
@@ -46,11 +46,10 @@ class athenaLTSM(torch.nn.Module):
         self.input_size = input_size #input size
         self.hidden_size = hidden_size #hidden state
         self.seq_length = seq_length #sequence length
-        print('Sequence Length is ', self.seq_length)
 
         self.lstm = torch.nn.LSTM(input_size=input_size, hidden_size=hidden_size,
                             num_layers=num_layers, batch_first=True) #lstm
-        self.fc_1 =  torch.nn.Linear(hidden_size, 128) #fully connected 1
+        self.fc_1 =  torch.nn.Linear(num_layers*hidden_size, 128) #fully connected 1
         self.fc = torch.nn.Linear(128, num_targets) #fully connected last layer
 
         self.relu = torch.nn.ReLU()

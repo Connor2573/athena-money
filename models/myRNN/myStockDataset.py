@@ -4,6 +4,15 @@ import os
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 
+def loaderTickerData(ticker):
+    weeksStored = 2
+    dfs = []
+    for i in range(1, weeksStored+1):
+        dfs.append(loadSingleCsv(ticker+str(i)+'.csv'))
+    main_df = dfs[0]
+    for i in range(1, weeksStored):
+        main_df = pd.concat([main_df, dfs[i]])
+    return main_df
 
 def preprocess(df):
     preprocesstimestamp(df)

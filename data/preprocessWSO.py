@@ -2,6 +2,7 @@ import os
 import pandas as pd
 
 basedir = os.path.abspath(os.path.dirname(__file__))
+week = '2'
 myWatchList = set(['TSLA', 'EA', 'INTC', 'MSFT', 'SONY', 'NVDA', 'AAPL', 'ENPH', 'GOOGL', 'NOC', 'IBM', 'META', 'CVNA', 
                'AMD', 'AMC', 'AMZN', 'SOFI', 'JPM'])
 
@@ -44,7 +45,7 @@ def singleFileData(watchList):
                 olddf = pd.read_csv(f)
                 df = pd.concat([olddf, df])
 
-        processedPath = os.path.join(processedDir, name + '.csv')
+        processedPath = os.path.join(processedDir, name + week + '.csv')
         df.to_csv(processedPath)
 
     deleteData(dataDir)

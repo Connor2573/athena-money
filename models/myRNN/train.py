@@ -4,7 +4,7 @@ import pandas as pd
 from models import athenaLTSM
 from torch.utils.data import DataLoader
 from torch.autograd import Variable 
-from myStockDataset import myData, loadAllMyCsvsIntoDataframeList, loadSingleCsv, preprocess
+from myStockDataset import myData, loadAllMyCsvsIntoDataframeList, loadSingleCsv, preprocess, loaderTickerData
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import matplotlib.pyplot as plt
 
@@ -12,21 +12,21 @@ mm = MinMaxScaler()
 ss = StandardScaler()
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-num_epochs = 3000 #1000 epochs
+num_epochs = 1000 #1000 epochs
 learning_rate = 0.001 #0.001 lr
 
-input_size = 19 #number of features
-hidden_size = 19 #number of features in hidden state
+input_size = 7 #number of features
+hidden_size = 128 #number of features in hidden state
 num_layers = 1 #number of stacked lstm layers
-seq_length = 1
+seq_length = 10
 num_classes = 1 #number of output classes 
-split = 110 
+split = 400 
 
-df = loadSingleCsv('SONY.csv')
-df = df.drop(columns=['lastClose', 'timestamp'])
+#df = loadSingleCsv('AAPL2.csv')
+df = loaderTickerData('CVNA')
 
-X = df.iloc[:, 1:]
-Y = df.iloc[:, 0:1]
+X = df.iloc[:, 3:]
+Y = df.iloc[:, 2:3]
 
 X_ss = ss.fit_transform(X)
 y_mm = mm.fit_transform(Y) 
@@ -58,6 +58,7 @@ lstm1.to(device)
 criterion = torch.nn.MSELoss()    # mean-squared error for regression
 optimizer = torch.optim.Adam(lstm1.parameters(), lr=learning_rate) 
 
+print('Training with: ', device)
 for epoch in range(num_epochs):
   outputs = lstm1.forward(X_train_tensors_final) #forward pass
   optimizer.zero_grad() #caluclate the gradient, manually setting to 0
@@ -72,8 +73,9 @@ for epoch in range(num_epochs):
     print("Epoch: %d, loss: %1.5f" % (epoch, loss.item())) 
 
 print("finished training")
-df_X_ss = ss.transform(df.iloc[:, 1:]) #old transformers
-df_y_mm = mm.transform(df.iloc[:, 0:1]) #old transformers
+
+df_X_ss = ss.transform(df.iloc[:, 3:]) #old transformers
+df_y_mm = mm.transform(df.iloc[:, 2:3]) #old transformers
 
 df_X_ss = Variable(torch.Tensor(df_X_ss).to(device)) #converting to Tensors
 df_y_mm = Variable(torch.Tensor(df_y_mm).to(device))
