@@ -1,5 +1,6 @@
 import quandl
 
 quandl.read_key()
-data = quandl.get('WIKI/FB')
-data.to_csv('./data/FB.csv')
+ticker = 'NVDA'
+data = quandl.get('WIKI/' + ticker)
+data.to_csv('./data/' + ticker + '.csv')
