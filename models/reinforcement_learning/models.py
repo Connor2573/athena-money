@@ -22,17 +22,24 @@ class Agent_MK1():
                  architecture,
                  l2_reg,
                  tau,
-                 batch_size):
+                 batch_size,
+                 load_models=False):
         self.state_dim = state_dim
         self.num_actions = num_actions
         self.experience = deque([], maxlen=replay_capacity)
         self.learning_rate = learning_rate
-        self.gamma = torch.Tensor(gamma)
+        self.gamma = torch.Tensor(gamma).to(dtype=torch.int32, device=device)
         self.architecture = architecture
         self.l2_reg = l2_reg
 
-        self.online_network = self.build_model()
-        self.target_network = self.build_model()
+        #build models
+        if load_models:
+            self.online_network = self.load_model('online')
+            self.target_network = self.load_model('target')
+        else:
+            self.online_network = self.build_model()
+            self.target_network = self.build_model()
+
         self.update_target()
 
         self.epsilon = epsilon_start
@@ -50,12 +57,16 @@ class Agent_MK1():
         self.batch_size = batch_size
         self.tau = tau
         self.losses = []
-        self.idx = torch.range(0, batch_size - 1).to(torch.int32)
+        self.idx = torch.range(0, batch_size - 1).to(dtype=torch.int32, device=device)
         self.train = True
         
         self.loss_fn = nn.MSELoss()
-        self.optim = torch.optim.Adam(self.online_network.parameters(), lr=1e-3)
+        self.optim = torch.optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
         
+    def load_model(self, model_name):
+        model = torch.load('./models/savedModels/lr_' + model_name + '_mk1_' + str(30) + '.pth') #20 is the model number that is to be loaded
+        return model
+
     def build_model(self):
         model = Sequential()
         n = len(self.architecture)
@@ -76,12 +87,12 @@ class Agent_MK1():
         self.total_steps += 1
         if np.random.rand() <= self.epsilon:
             return np.random.choice(self.num_actions)
-        tensor_state = torch.from_numpy(state).squeeze().to(torch.float32)
+        tensor_state = torch.from_numpy(state).squeeze().to(dtype=torch.float32, device=device)
         #print(tensor_state)
         q = self.online_network(tensor_state)
         out = torch.argmax(q)#.squeeze()
         #print('out:', out)
-        return out.numpy()
+        return out.cpu().numpy()
 
     def memorize_transition(self, s, a, r, s_prime, not_done):
         if not_done:
@@ -111,11 +122,11 @@ class Agent_MK1():
             return
         minibatch_list = list(minibatch)
         states, actions, rewards, next_states, not_done = minibatch_list
-        states = torch.from_numpy(states).to(torch.float32)
-        actions = torch.from_numpy(actions).to(torch.float32)
-        rewards = torch.from_numpy(rewards).to(torch.float32)
-        next_states = torch.from_numpy(next_states).to(torch.float32)
-        not_done = torch.from_numpy(not_done).to(torch.float32)
+        states = torch.from_numpy(states).to(dtype=torch.float32, device=device)
+        actions = torch.from_numpy(actions).to(dtype=torch.float32, device=device)
+        rewards = torch.from_numpy(rewards).to(dtype=torch.float32, device=device)
+        next_states = torch.from_numpy(next_states).to(dtype=torch.float32, device=device)
+        not_done = torch.from_numpy(not_done).to(dtype=torch.float32, device=device)
         """
         got_mini_batch = False
         while not got_mini_batch:
@@ -137,17 +148,18 @@ class Agent_MK1():
             #figure out the best_action we can do now that will result in the best next_q_value, for the online network
             next_q_values = []
             for next_state in next_states:
-                tensor_state = next_state.squeeze().to(torch.float32)
-                next_q_values.append(self.online_network(tensor_state).detach().numpy())
-            best_actions = np.argmax(next_q_values, axis=1)
+                tensor_state = next_state.squeeze().to(dtype=torch.float32, device=device)
+                next_q_values.append(self.online_network(tensor_state))
+            next_q_values_tensor = torch.stack(next_q_values)
+            best_actions = torch.argmax(next_q_values_tensor, dim=1)
 
             #predict the target
             next_q_values_target = []
             for next_state in next_states:
-                tensor_state = next_state.squeeze().to(torch.float32)
+                tensor_state = next_state.squeeze().to(dtype=torch.float32, device=device)
                 next_q_values_target.append(self.target_network(tensor_state))
             next_q_values_target_tensor = torch.stack(next_q_values_target)
-            indices = np.stack((self.idx.numpy(), best_actions), axis=1) #, torch.cast(best_actions, torch.int32)
+            indices = torch.stack((self.idx, best_actions), dim=1) #, torch.cast(best_actions, torch.int32)
             target_q_values = torch.Tensor(next_q_values_target_tensor[list(indices.T)])
             
             
@@ -155,7 +167,7 @@ class Agent_MK1():
             
             q_values = []
             for state in states:
-                tensor_state = state.squeeze().to(torch.float32)
+                tensor_state = state.squeeze().to(dtype=torch.float32, device=device)
                 q_values.append(self.online_network(tensor_state))
             q_values = torch.stack(q_values)
             actions = actions.to(torch.int32)
@@ -164,7 +176,7 @@ class Agent_MK1():
         
         train_output = []
         for state in states:
-            tensor_state = state.squeeze().to(torch.float32)
+            tensor_state = state.squeeze().to(dtype=torch.float32, device=device)
             train_output.append(self.online_network(tensor_state))
         train_tensor = torch.stack(train_output)
             

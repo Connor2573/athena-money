@@ -60,12 +60,12 @@ max_episode_steps = trading_environment.spec.max_episode_steps
 gamma = .99,  # discount factor
 tau = 10  # target network update frequency
 
-architecture = (256, 128)  # units per layer
+architecture = (64, 64)  # units per layer
 learning_rate = 0.0001  # learning rate
 l2_reg = 1e-6  # L2 regularization
 
 replay_capacity = int(1e6)
-batch_size = 4096
+batch_size = 1024
 
 epsilon_start = 1.0
 epsilon_end = .01
@@ -84,14 +84,15 @@ ddqn = Agent_MK1(state_dim=state_dim,
                  architecture=architecture,
                  l2_reg=l2_reg,
                  tau=tau,
-                 batch_size=batch_size)
+                 batch_size=batch_size,
+                 load_models=True)
 
 
 for layer in ddqn.online_network:
     print(layer.__str__())
 
 total_steps = 0
-max_episodes = 1000
+max_episodes = 50
 
 episode_time, navs, market_navs, diffs, episode_eps = [], [], [], [], []
 
@@ -155,6 +156,9 @@ for episode in range(1, max_episodes + 1):
                       # share of agent wins, defined as higher ending nav
                       np.sum([s > 0 for s in diffs[-100:]])/min(len(diffs), 100), 
                       time() - start, ddqn.epsilon)
+        if episode > 16:
+            torch.save(ddqn.online_network, './models/savedModels/lr_online_mk1_' + str(episode) + '.pth')
+            torch.save(ddqn.target_network, './models/savedModels/lr_target_mk1_' + str(episode) + '.pth')
     if len(diffs) > 25 and all([r > 0 for r in diffs[-25:]]):
         print(result.tail())
         break
