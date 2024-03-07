@@ -7,3 +7,6 @@
 /data/__pycache__
 *.pyc
 /models/savedModels
+/check_points
+/data
+/figures
