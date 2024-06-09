@@ -16,6 +16,12 @@ pipeline = ChronosPipeline.from_pretrained(
 # Load the data
 df = pd.read_csv(f'./data/{ticker}.csv')
 
+# Convert the 'Date' column to datetime
+df['Date'] = pd.to_datetime(df['Date'])
+
+# Sort the DataFrame by 'Date'
+df = df.sort_values('Date')
+
 # context must be either a 1D tensor, a list of 1D tensors,
 # or a left-padded 2D tensor with batch as the first dimension
 context = torch.tensor(df["5. adjusted close"][:-number_to_predict])
